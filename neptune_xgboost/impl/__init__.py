@@ -79,6 +79,12 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
             if 'best_iteration' in model.attributes().keys():
                 self.run['best_iteration'] = model.attributes()['best_iteration']
 
+        self._log_importance(model)
+        self._log_trees(model)
+        self._log_model(model)
+        return model
+
+    def _log_importance(self, model):
         if self.log_importance:
             # for 'cv' log importance chart per fold
             if self.cv:
@@ -91,6 +97,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                 self.run['plots/importance'].upload(neptune.types.File.as_image(importance.figure))
                 plt.close('all')
 
+    def _log_trees(self, model):
         if self.log_tree is not None:
             # for 'cv' log trees for each cv fold (different model is trained on each fold)
             if self.cv:
@@ -109,6 +116,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                 self.run['plots/trees'] = neptune.types.FileSeries(trees)
                 plt.close('all')
 
+    def _log_model(self, model):
         if self.log_model:
             # for 'cv' log model per fold
             if self.cv:
@@ -116,7 +124,6 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                     self.run[f'fold_{i}/model_pickle'].upload(neptune.types.File.as_pickle(fold.bst))
             else:
                 self.run['model_pickle'].upload(neptune.types.File.as_pickle(model))
-        return model
 
     def before_iteration(self, model, epoch: int,
                          evals_log: xgb.callback.CallbackContainer.EvalsLog) -> bool:
@@ -126,7 +133,11 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
     def after_iteration(self, model, epoch: int,
                         evals_log: xgb.callback.CallbackContainer.EvalsLog) -> bool:
         self.run['epoch'].log(epoch)
+        self._log_metrics(evals_log)
+        self._log_learning_rate(model)
+        return False
 
+    def _log_metrics(self, evals_log):
         for stage, metrics_dict in evals_log.items():
             for metric_name, metric_values in evals_log[stage].items():
                 if self.cv:
@@ -136,10 +147,10 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                 else:
                     self.run[stage][metric_name].log(metric_values[-1])
 
+    def _log_learning_rate(self, model):
         if self.cv:
             config = json.loads(model.cvfolds[0].bst.save_config())
         else:
             config = json.loads(model.save_config())
         lr = config['learner']['gradient_booster']['updater']['grow_colmaker']['train_param']['learning_rate']
         self.run['learning_rate'].log(float(lr))
-        return False
