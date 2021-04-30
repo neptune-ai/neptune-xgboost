@@ -60,6 +60,8 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                           "Make sure the Graphviz executables are on your systems' PATH"
                 warnings.warn(message)
 
+        run['source_code/integrations/neptune-xgboost'] = __version__
+
     def before_training(self, model):
         if hasattr(model, 'cvfolds'):
             self.cv = True
