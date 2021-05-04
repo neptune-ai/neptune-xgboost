@@ -125,13 +125,11 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
             else:
                 self.run['model_pickle'].upload(neptune.types.File.as_pickle(model))
 
-    def before_iteration(self, model, epoch: int,
-                         evals_log: xgb.callback.CallbackContainer.EvalsLog) -> bool:
+    def before_iteration(self, model, epoch: int, evals_log) -> bool:
         # False to indicate training should not stop.
         return False
 
-    def after_iteration(self, model, epoch: int,
-                        evals_log: xgb.callback.CallbackContainer.EvalsLog) -> bool:
+    def after_iteration(self, model, epoch: int, evals_log) -> bool:
         self.run['epoch'].log(epoch)
         self._log_metrics(evals_log)
         self._log_learning_rate(model)
