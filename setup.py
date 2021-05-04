@@ -29,11 +29,11 @@ def main():
     setup(
         name='neptune-xgboost',
         version=version,
-        description='Neptune.ai LightGBM integration library',
+        description='Neptune.ai XGBoost integration library',
         author='neptune.ai',
         support='contact@neptune.ai',
         author_email='contact@neptune.ai',
-        url="https://github.com/neptune-ai/neptune-client",
+        url="https://github.com/neptune-ai/neptune-xgboost",
         long_description=readme,
         long_description_content_type="text/markdown",
         license='MIT License',
