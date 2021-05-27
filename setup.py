@@ -15,7 +15,7 @@ def main():
         all_deps += extras[group_name]
     extras['all'] = all_deps
 
-    base_libs = ['neptune-client>=0.5.4', 'xgboost>=1.3.0', 'matplotlib', 'graphviz']
+    base_libs = ['neptune-client>=0.9.8', 'xgboost>=1.3.0', 'matplotlib', 'graphviz']
 
     version = None
     if os.path.exists('PKG-INFO'):
@@ -35,6 +35,11 @@ def main():
         support='contact@neptune.ai',
         author_email='contact@neptune.ai',
         url="https://github.com/neptune-ai/neptune-xgboost",
+        project_urls={
+            'Tracker': 'https://github.com/neptune-ai/neptune-xgboost/issues',
+            'Source': 'https://github.com/neptune-ai/neptune-xgboost',
+            'Documentation': 'https://docs.neptune.ai/integrations-and-supported-tools/model-training/xgboost',
+        },
         long_description=readme,
         long_description_content_type="text/markdown",
         license='Apache License 2.0',
@@ -44,7 +49,8 @@ def main():
         zip_safe=False,
         classifiers=[
             # As from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-            'Development Status :: 5 - Production/Stable',
+            'Development Status :: 4 - Beta',
+            # 'Development Status :: 5 - Production/Stable',  # Switch to Stable when applicable
             'Environment :: Console',
             'Intended Audience :: Developers',
             'Intended Audience :: Science/Research',
