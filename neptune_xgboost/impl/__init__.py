@@ -21,9 +21,11 @@ __all__ = [
 import json
 import subprocess
 import warnings
+from io import BytesIO
 
 import matplotlib.pyplot as plt
 import xgboost as xgb
+from matplotlib import image
 
 from neptune_xgboost import __version__
 
@@ -42,15 +44,32 @@ INTEGRATION_VERSION_KEY = "source_code/integrations/neptune-xgboost"
 class NeptuneCallback(xgb.callback.TrainingCallback):
     """
 
+
+
+
+
+    .. _Neptune-XGBoost docs:
+        https://docs.neptune.ai/integrations-and-supported-tools/model-training/xgboost
+       _Neptune-XGBoost installation:
+        https://docs.neptune.ai/integrations-and-supported-tools/model-training/xgboost#install-requirements
+       _run docs:
+        https://docs.neptune.ai/api-reference/run
+       _xgboost.plot_importance:
+        https://xgboost.readthedocs.io/en/latest/python/python_api.html#xgboost.plot_importance
+       _xgboost.plot_tree:
+        https://xgboost.readthedocs.io/en/latest/python/python_api.html#xgboost.plot_tree
+       _example scripts:
+        https://github.com/neptune-ai/examples/tree/main/integrations-and-supported-tools/xgboost/scripts
     """
 
     def __init__(self,
-                 run,  # Neptune run, required
-                 base_namespace="training",  # if none we apply "training" by default
-                 log_model=True,  # log model as pickled object at the end of training
-                 log_importance=True,  # requires matplotlib, log feature importance chart at the end of training
-                 max_num_features=None,  # requires matplotlib, number of top features on the feature importance chart
-                 log_tree=None):  # requires graphviz, indices of trained trees to log as chart, i.e. [0, 1, 2]
+                 run,
+                 base_namespace="training",
+                 log_model=True,
+                 log_importance=True,
+                 max_num_features=None,
+                 log_tree=None,
+                 tree_figsize=30):
 
         verify_type("run", run, neptune.Run)
         verify_type("base_namespace", base_namespace, str)
@@ -58,6 +77,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         log_importance is not None and verify_type("log_importance", log_importance, bool)
         max_num_features is not None and verify_type("max_num_features", max_num_features, int)
         log_tree is not None and verify_type("log_tree", log_tree, list)
+        verify_type("tree_figsize", tree_figsize, int)
 
         self.run = run[base_namespace]
         self.log_model = log_model
@@ -65,6 +85,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         self.max_num_features = max_num_features
         self.log_tree = log_tree
         self.cv = False
+        self.tree_figsize = tree_figsize
 
         if self.log_tree:
             try:
@@ -119,15 +140,27 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                 for i, fold in enumerate(model.cvfolds):
                     trees = []
                     for j in self.log_tree:
-                        tree = xgb.plot_tree(fold.bst, num_trees=j)
-                        trees.append(neptune.types.File.as_image(tree.figure))
+                        tree = xgb.to_graphviz(fold.bst, num_trees=j)
+                        _, ax = plt.subplots(1, 1, figsize=(50, 50))
+                        s = BytesIO()
+                        s.write(tree.pipe(format="png"))
+                        s.seek(0)
+                        ax.imshow(image.imread(s))
+                        ax.axis("off")
+                        trees.append(neptune.types.File.as_image(ax.figure))
                     self.run[f"fold_{i}/plots/trees"] = neptune.types.FileSeries(trees)
                     plt.close("all")
             else:
                 trees = []
                 for j in self.log_tree:
-                    tree = xgb.plot_tree(model, num_trees=j)
-                    trees.append(neptune.types.File.as_image(tree.figure))
+                    tree = xgb.to_graphviz(model, num_trees=j)
+                    _, ax = plt.subplots(1, 1, figsize=(self.tree_figsize, self.tree_figsize))
+                    s = BytesIO()
+                    s.write(tree.pipe(format="png"))
+                    s.seek(0)
+                    ax.imshow(image.imread(s))
+                    ax.axis("off")
+                    trees.append(neptune.types.File.as_image(ax.figure))
                 self.run["plots/trees"] = neptune.types.FileSeries(trees)
                 plt.close("all")
 
