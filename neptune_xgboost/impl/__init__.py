@@ -65,7 +65,8 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
 
     Callback works with ``xgboost.train()`` and ``xgboost.cv()`` functions, and with the sklearn API ``model.fit()``.
 
-    For more details see `Neptune-XGBoost docs`_.
+    Note:
+        This callback works with ``xgboost>=1.3.0``. This release introduced new style Python callback API.
 
     Note:
         You can use public ``api_token="ANONYMOUS"`` and set ``project="common/xgboost-integration"``
@@ -80,15 +81,13 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         log_model (bool): Defaults to True. Log model as pickled file at the end of training.
         log_importance (bool): Defaults to True. Log feature importance charts at the end of training.
         max_num_features (int): Defaults to None. Max number of top features on the importance charts.
-            Works only if ``log_importance`` is set to ``True``.
-            If None, all features will be displayed.
+            Works only if ``log_importance`` is set to ``True``. If None, all features will be displayed.
             See `xgboost.plot_importance`_ for details.
-        log_tree (list): Defaults to None. Indices of the target trees to log as chart.
+        log_tree (list): Defaults to None. Indices of the target trees to log as charts.
             This requires graphviz to work. Learn about setup in the `Neptune-XGBoost installation`_ docs.
-            See `xgboost.plot_tree`_ for details.
+            See `xgboost.to_graphviz`_ for details.
         tree_figsize (int): Defaults to 30, Control size of the visualized tree image.
-            Increase this in case you work with large trees.
-            Works only if ``log_tree`` is list.
+            Increase this in case you work with large trees. Works only if ``log_tree`` is list.
 
     Examples:
         For more examples visit `example scripts`_.
@@ -149,8 +148,8 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         https://docs.neptune.ai/api-reference/run
        _xgboost.plot_importance:
         https://xgboost.readthedocs.io/en/latest/python/python_api.html#xgboost.plot_importance
-       _xgboost.plot_tree:
-        https://xgboost.readthedocs.io/en/latest/python/python_api.html#xgboost.plot_tree
+       _xgboost.to_graphviz:
+        https://xgboost.readthedocs.io/en/latest/python/python_api.html#xgboost.to_graphviz
        _example scripts:
         https://github.com/neptune-ai/examples/tree/main/integrations-and-supported-tools/xgboost/scripts
     """
@@ -204,9 +203,9 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         else:
             self.run["booster_config"] = json.loads(model.save_config())
             if "best_score" in model.attributes().keys():
-                self.run["best_score"] = model.attributes()["best_score"]
+                self.run["early_stopping/best_score"] = model.attributes()["best_score"]
             if "best_iteration" in model.attributes().keys():
-                self.run["best_iteration"] = model.attributes()["best_iteration"]
+                self.run["early_stopping/best_iteration"] = model.attributes()["best_iteration"]
 
         self._log_importance(model)
         self._log_trees(model)
@@ -234,7 +233,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                     trees = []
                     for j in self.log_tree:
                         tree = xgb.to_graphviz(fold.bst, num_trees=j)
-                        _, ax = plt.subplots(1, 1, figsize=(50, 50))
+                        _, ax = plt.subplots(1, 1, figsize=(self.tree_figsize, self.tree_figsize))
                         s = BytesIO()
                         s.write(tree.pipe(format="png"))
                         s.seek(0)
@@ -262,9 +261,9 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
             # for "cv" log model per fold
             if self.cv:
                 for i, fold in enumerate(model.cvfolds):
-                    self.run[f"fold_{i}/model_pickle"].upload(neptune.types.File.as_pickle(fold.bst))
+                    self.run[f"fold_{i}/pickled_model"].upload(neptune.types.File.as_pickle(fold.bst))
             else:
-                self.run["model_pickle"].upload(neptune.types.File.as_pickle(model))
+                self.run["pickled_model"].upload(neptune.types.File.as_pickle(model))
 
     def before_iteration(self, model, epoch: int, evals_log) -> bool:
         # False to indicate training should not stop.
