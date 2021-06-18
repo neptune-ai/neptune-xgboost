@@ -1,1 +1,1 @@
-neptune_integration_template/_version.py export-subst  # TODO: Update path
+neptune_xgboost/_version.py export-subst
