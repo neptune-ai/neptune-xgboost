@@ -30,13 +30,15 @@ from matplotlib import image
 from neptune_xgboost import __version__
 
 try:
-    # neptune-client=0.9.0 package structure
+    # neptune-client=0.9.0+ package structure
     import neptune.new as neptune
     from neptune.new.internal.utils import verify_type
+    from neptune.new.internal.utils.compatibility import expect_not_an_experiment
 except ImportError:
-    # neptune-client=1.0.0 package structure
+    # neptune-client>=1.0.0 package structure
     import neptune
     from neptune.internal.utils import verify_type
+    from neptune.internal.utils.compatibility import expect_not_an_experiment
 
 INTEGRATION_VERSION_KEY = "source_code/integrations/neptune-xgboost"
 
@@ -163,6 +165,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                  log_tree=None,
                  tree_figsize=30):
 
+        expect_not_an_experiment(run)
         verify_type("run", run, neptune.Run)
         verify_type("base_namespace", base_namespace, str)
         log_model is not None and verify_type("log_model", log_model, bool)
