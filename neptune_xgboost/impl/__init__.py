@@ -294,11 +294,12 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         else:
             config = json.loads(model.save_config())
 
-        try:
-            lr = config["learner"]["gradient_booster"]["updater"]["grow_colmaker"]["train_param"]["learning_rate"]
+        lr = None
+        updater = config["learner"]["gradient_booster"]["updater"]
+        if "grow_colmaker" in updater:
+            lr = updater["grow_colmaker"]["train_param"]["learning_rate"]
+        elif "grow_gpu_hist" in updater:
+            lr = updater["grow_gpu_hist"]["train_param"]["learning_rate"]
+
+        if lr is not None:
             self.run["learning_rate"].log(float(lr))
-        except KeyError:
-            """Do not log `lr` if it's not possible.
-            E.g. `gpu_hist` and `hist` methods in `XGBoost` do not have `grow_colmaker`,
-            because of the algorithm design."""
-            pass
