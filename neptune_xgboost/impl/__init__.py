@@ -26,6 +26,7 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 import xgboost as xgb
 from matplotlib import image
+import dictnodefinder
 
 from neptune_xgboost import __version__
 
@@ -294,11 +295,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         else:
             config = json.loads(model.save_config())
 
-        try:
+        if dictnodefinder.findkeys(config, "grow_colmaker"):
             lr = config["learner"]["gradient_booster"]["updater"]["grow_colmaker"]["train_param"]["learning_rate"]
-            self.run["learning_rate"].log(float(lr))
-        except KeyError:
-            """Do not log `lr` if it's not possible.
-            E.g. `gpu_hist` and `hist` methods in `XGBoost` do not have `grow_colmaker`,
-            because of the algorithm design."""
-            pass
+        elif dictnodefinder.findkeys(config, "grow_gpu_hist"):
+            lr = config["learner"]["gradient_booster"]["updater"]["grow_gpu_hist"]["train_param"]["learning_rate"]
