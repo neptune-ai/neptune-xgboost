@@ -1,3 +1,9 @@
+## neptune-xgboost 0.9.13
+
+### Fixes
+- Support `learning reate` for  `updater` types ([#8](https://github.com/neptune-ai/neptune-xgboost/pull/8))
+
+
 ## neptune-xgboost 0.9.12
 
 ### Fixes
