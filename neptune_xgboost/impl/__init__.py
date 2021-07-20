@@ -296,10 +296,12 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
 
         lr = None
         updater = config["learner"]["gradient_booster"]["updater"]
-        if "grow_colmaker" in updater:
-            lr = updater["grow_colmaker"]["train_param"]["learning_rate"]
-        elif "grow_gpu_hist" in updater:
-            lr = updater["grow_gpu_hist"]["train_param"]["learning_rate"]
+        updater_types = ['grow_colmaker', 'grow_histmaker', 'grow_local_histmaker', 'grow_quantile_histmaker',
+                         'grow_gpu_hist', 'sync', 'refresh', 'prune']
+        for updater_type in updater_types:
+            if updater_type in updater:
+                lr = updater[updater_type]["train_param"]["learning_rate"]
+                break
 
         if lr is not None:
             self.run["learning_rate"].log(float(lr))
