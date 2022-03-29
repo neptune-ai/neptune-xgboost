@@ -29,3 +29,12 @@ Experiment tracking, model registry, data versioning, and live model monitoring 
 * [Code example on GitHub](https://github.com/neptune-ai/examples/blob/main/integrations-and-supported-tools/xgboost/scripts/Neptune_XGBoost_train.py)
 * [Example of a run logged in the Neptune app](https://app.neptune.ai/o/common/org/xgboost-integration/e/XGBOOST-84/dashboard/train-e395296a-4f3d-4a58-ab88-6ef06bbac657)
 * [Run example in Google Colab](https://colab.research.google.com/github/neptune-ai/examples/blob/main/integrations-and-supported-tools/xgboost/notebooks/Neptune_XGBoost.ipynb)
+
+## Support
+
+If you got stuck or simply want to talk to us, here are your options:
+
+* Check our [FAQ page](https://docs.neptune.ai/getting-started/getting-help#frequently-asked-questions)
+* You can submit bug reports, feature requests, or contributions directly to the repository.
+* Chat! When in the Neptune application click on the blue message icon in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP),
+* You can just shoot us an email at support@neptune.ai
