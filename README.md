@@ -1,4 +1,4 @@
-# XGBoost + Neptune Integration
+# Neptune + XGBoost Integration
 
 Experiment tracking, model registry, data versioning, and live model monitoring for XGBoost trained models.
 
@@ -18,6 +18,7 @@ Experiment tracking, model registry, data versioning, and live model monitoring 
 * hardware consumption (CPU, GPU, Memory),
 * stdout and stderr logs, and
 * training code and git commit information
+* [other metadata](https://docs.neptune.ai/you-should-know/what-can-you-log-and-display)
 
 ![image](https://user-images.githubusercontent.com/97611089/160614588-5d839a11-e2f9-4eed-a3d1-39314ebdb1ea.png)
 *Example dashboard with train-valid metrics and selected parameters*
