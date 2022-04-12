@@ -31,6 +31,47 @@ Experiment tracking, model registry, data versioning, and live model monitoring 
 * [Example of a run logged in the Neptune app](https://app.neptune.ai/o/common/org/xgboost-integration/e/XGBOOST-84/dashboard/train-e395296a-4f3d-4a58-ab88-6ef06bbac657)
 * [Run example in Google Colab](https://colab.research.google.com/github/neptune-ai/examples/blob/main/integrations-and-supported-tools/xgboost/notebooks/Neptune_XGBoost.ipynb)
 
+## Example
+
+```python
+# On the command line:
+pip install neptune-client xgboost>=1.3.0 neptune-xgboost
+```
+```python
+# In Python:
+import neptune.new as neptune
+import xgboost as xgb
+from neptune.new.integrations.xgboost import NeptuneCallback
+
+# Start a run
+run = neptune.init(
+    project="common/xgboost-integration",
+    api_token="ANONYMOUS",
+)
+
+# Create a NeptuneCallback instance
+neptune_callback = NeptuneCallback(run=run, log_tree=[0, 1, 2, 3])
+
+# Prepare datasets
+...
+data_train = xgb.DMatrix(X_train, label=y_train)
+
+# Define model parameters
+model_params = {
+    "eta": 0.7,
+    "gamma": 0.001,
+    "max_depth": 9,
+    ...
+}
+
+# Train the model and log metadata to the run in Neptune
+xgb.train(
+    params=model_params,
+    dtrain=data_train,
+    callbacks=[neptune_callback],
+)
+```
+
 ## Support
 
 If you got stuck or simply want to talk to us, here are your options:
