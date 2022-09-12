@@ -1,14 +1,17 @@
+## neptune-xgboost 0.10.0
+
+### Changes
+- Changed integrations utils to be imported from non-internal package ([#10](https://github.com/neptune-ai/neptune-xgboost/pull/10))
+
 ## neptune-xgboost 0.9.13
 
 ### Fixes
 - Support `learning reate` for  `updater` types ([#8](https://github.com/neptune-ai/neptune-xgboost/pull/8))
 
-
 ## neptune-xgboost 0.9.12
 
 ### Fixes
 - Do not log `learning rate` if value is unavailable ([#6](https://github.com/neptune-ai/neptune-xgboost/pull/6))
-
 
 ## neptune-xgboost 0.9.11
 
