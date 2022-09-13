@@ -196,13 +196,29 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
             self.cv = True
         return model
 
+    @staticmethod
+    def _as_float(obj):
+        """Tries to convert string to float.
+        Returns original object if obj is not string and in case of failure."""
+        if not isinstance(obj, str):
+            return obj
+
+        try:
+            return float(obj)
+        except ValueError:
+            return obj
+
     def after_training(self, model):
         # model structure is different for "cv" and "train" functions that you use to train xgb model
         if self.cv:
             for i, fold in enumerate(model.cvfolds):
                 self.run[f"fold_{i}/booster_config"] = json.loads(fold.bst.save_config())
         else:
-            self.run["booster_config"] = json.loads(model.save_config())
+            booster_config_with_floats = json.loads(
+                model.save_config(),
+                object_pairs_hook=lambda e: {k: self._as_float(v) for k, v in e}
+            )
+            self.run["booster_config"] = booster_config_with_floats
             if "best_score" in model.attributes().keys():
                 self.run["early_stopping/best_score"] = model.attributes()["best_score"]
             if "best_iteration" in model.attributes().keys():
