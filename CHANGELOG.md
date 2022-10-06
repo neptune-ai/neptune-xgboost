@@ -1,3 +1,8 @@
+## [UNRELEASED] neptune-xgboost 0.10.1
+
+### Changes
+- Moved `neptune-xgboost` package to `src` directory ([#12](https://github.com/neptune-ai/neptune-xgboost/pull/12))
+
 ## neptune-xgboost 0.10.0
 
 ### Changes
