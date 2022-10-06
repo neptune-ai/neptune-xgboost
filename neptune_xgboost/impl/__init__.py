@@ -32,11 +32,11 @@ from neptune_xgboost import __version__
 try:
     # neptune-client=0.9.0+ package structure
     import neptune.new as neptune
-    from neptune.new.integrations.utils import verify_type, expect_not_an_experiment
+    from neptune.new.integrations.utils import expect_not_an_experiment, verify_type
 except ImportError:
     # neptune-client>=1.0.0 package structure
     import neptune
-    from neptune.integrations.utils import verify_type, expect_not_an_experiment
+    from neptune.integrations.utils import expect_not_an_experiment, verify_type
 
 INTEGRATION_VERSION_KEY = "source_code/integrations/neptune-xgboost"
 
@@ -154,14 +154,16 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         https://github.com/neptune-ai/examples/tree/main/integrations-and-supported-tools/xgboost/scripts
     """
 
-    def __init__(self,
-                 run,
-                 base_namespace="training",
-                 log_model=True,
-                 log_importance=True,
-                 max_num_features=None,
-                 log_tree=None,
-                 tree_figsize=30):
+    def __init__(
+        self,
+        run,
+        base_namespace="training",
+        log_model=True,
+        log_importance=True,
+        max_num_features=None,
+        log_tree=None,
+        tree_figsize=30,
+    ):
 
         expect_not_an_experiment(run)
         verify_type("run", run, neptune.Run)
@@ -185,8 +187,10 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                 subprocess.call(["dot", "-V"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except OSError:
                 self.log_tree = None
-                message = "Graphviz executables not found, so trees will not be logged. " \
-                          "Make sure the Graphviz executables are on your systems' PATH"
+                message = (
+                    "Graphviz executables not found, so trees will not be logged. "
+                    "Make sure the Graphviz executables are on your systems' PATH"
+                )
                 warnings.warn(message)
 
         run[INTEGRATION_VERSION_KEY] = __version__
@@ -294,8 +298,16 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
 
         lr = None
         updater = config["learner"]["gradient_booster"]["updater"]
-        updater_types = ['grow_colmaker', 'grow_histmaker', 'grow_local_histmaker', 'grow_quantile_histmaker',
-                         'grow_gpu_hist', 'sync', 'refresh', 'prune']
+        updater_types = [
+            "grow_colmaker",
+            "grow_histmaker",
+            "grow_local_histmaker",
+            "grow_quantile_histmaker",
+            "grow_gpu_hist",
+            "sync",
+            "refresh",
+            "prune",
+        ]
         for updater_type in updater_types:
             if updater_type in updater:
                 lr = updater[updater_type]["train_param"]["learning_rate"]
