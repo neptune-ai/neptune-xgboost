@@ -3,6 +3,10 @@
 ### Changes
 - Moved `neptune-xgboost` package to `src` directory ([#12](https://github.com/neptune-ai/neptune-xgboost/pull/12))
 
+### Fixes
+- Fixed import issue for callback - now it is possible to import as `from neptune_xgboost import NeptuneCallback`
+  ([#14](https://github.com/neptune-ai/neptune-xgboost/pull/14))
+
 ## neptune-xgboost 0.10.0
 
 ### Changes

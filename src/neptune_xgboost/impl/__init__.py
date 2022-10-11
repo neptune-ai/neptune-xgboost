@@ -16,6 +16,7 @@
 
 __all__ = [
     "NeptuneCallback",
+    "__version__",
 ]
 
 import json
@@ -26,8 +27,6 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 import xgboost as xgb
 from matplotlib import image
-
-from neptune_xgboost import __version__
 
 try:
     # neptune-client=0.9.0+ package structure
@@ -43,6 +42,10 @@ except ImportError:
         expect_not_an_experiment,
         verify_type,
     )
+
+from neptune_xgboost._version import get_versions
+
+__version__ = get_versions()["version"]
 
 INTEGRATION_VERSION_KEY = "source_code/integrations/neptune-xgboost"
 
