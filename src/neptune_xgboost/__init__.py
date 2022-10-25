@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["NeptuneCallback", "__version__"]
 
 from neptune_xgboost.impl import (
     NeptuneCallback,
