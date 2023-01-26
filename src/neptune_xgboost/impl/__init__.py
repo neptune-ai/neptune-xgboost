@@ -173,7 +173,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
     ):
 
         expect_not_an_experiment(run)
-        verify_type("run", run, (neptune.Run, neptune.Handler))
+        verify_type("run", run, (neptune.Run, neptune.handler.Handler))
         verify_type("base_namespace", base_namespace, str)
         log_model is not None and verify_type("log_model", log_model, bool)
         log_importance is not None and verify_type("log_importance", log_importance, bool)
