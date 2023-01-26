@@ -80,7 +80,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         for testing without registration.
 
     Args:
-        run (:obj:`neptune.new.run.Run`): Neptune run object.
+        run (:obj:`neptune.run.Run`, :obj:`neptune.handler.Handler`): Neptune run or handler object.
             A run in Neptune is a representation of all metadata that you log to Neptune.
             Learn more in `run docs`_.
         base_namespace(:obj:`str`, optional): Defaults to "training".
@@ -107,7 +107,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
             from sklearn.model_selection import train_test_split
 
             # Create run
-            run = neptune.init(
+            run = neptune.init_run(
                 project="common/xgboost-integration",
                 api_token="ANONYMOUS",
                 name="xgb-train",
@@ -173,7 +173,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
     ):
 
         expect_not_an_experiment(run)
-        verify_type("run", run, neptune.Run)
+        verify_type("run", run, (neptune.Run, neptune.Handler))
         verify_type("base_namespace", base_namespace, str)
         log_model is not None and verify_type("log_model", log_model, bool)
         log_importance is not None and verify_type("log_importance", log_importance, bool)
@@ -282,7 +282,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         return False
 
     def after_iteration(self, model, epoch: int, evals_log) -> bool:
-        self.run["epoch"].log(epoch)
+        self.run["epoch"].append(epoch)
         self._log_metrics(evals_log)
         self._log_learning_rate(model)
         return False
@@ -292,10 +292,10 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
             for metric_name, metric_values in evals_log[stage].items():
                 if self.cv:
                     mean, std = metric_values[-1]
-                    self.run[stage][metric_name]["mean"].log(mean)
-                    self.run[stage][metric_name]["std"].log(std)
+                    self.run[stage][metric_name]["mean"].append(mean)
+                    self.run[stage][metric_name]["std"].append(std)
                 else:
-                    self.run[stage][metric_name].log(metric_values[-1])
+                    self.run[stage][metric_name].append(metric_values[-1])
 
     def _log_learning_rate(self, model):
         if self.cv:
@@ -321,4 +321,4 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                 break
 
         if lr is not None:
-            self.run["learning_rate"].log(float(lr))
+            self.run["learning_rate"].append(float(lr))

@@ -1,3 +1,15 @@
+## neptune-xgboost 1.0.0
+
+### Changes
+- `NeptuneCallback` accepts now namespace `Handler` as an alternative to `Run` for the `run` argument. This means that
+  you can call it like `NeptuneCallback(run=run["some/namespace/"])` to log everything to the `some/namespace/`
+  location of the run.
+
+### Breaking changes
+- We removed support for the legacy Neptune client API. Use it with `import neptune.new as neptune`.
+- The integration uses now `Run.append()` method instead of `Run.log()` which is available since version 0.16.14
+  of neptune-client.
+
 ## neptune-xgboost 0.10.1
 
 ### Changes
