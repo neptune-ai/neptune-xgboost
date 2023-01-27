@@ -200,7 +200,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                 )
                 warnings.warn(message)
 
-        run[INTEGRATION_VERSION_KEY] = __version__
+        run.get_root_object()[INTEGRATION_VERSION_KEY] = __version__
 
     def before_training(self, model):
         if hasattr(model, "cvfolds"):
