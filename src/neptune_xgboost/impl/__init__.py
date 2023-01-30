@@ -76,7 +76,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         This callback works with ``xgboost>=1.3.0``. This release introduced new style Python callback API.
 
     Note:
-        You can use public ``api_token="ANONYMOUS"`` and set ``project="common/xgboost-integration"``
+        You can use public ``api_token=neptune.ANONYMOUS_API_TOKEN`` and set ``project="common/xgboost-integration"``
         for testing without registration.
 
     Args:
@@ -109,7 +109,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
             # Create run
             run = neptune.init_run(
                 project="common/xgboost-integration",
-                api_token="ANONYMOUS",
+                api_token=neptune.ANONYMOUS_API_TOKEN,
                 name="xgb-train",
                 tags=["xgb-integration", "train"]
             )
