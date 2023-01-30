@@ -80,7 +80,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         for testing without registration.
 
     Args:
-        run (:obj:`neptune.run.Run`, :obj:`neptune.handler.Handler`): Neptune run or handler object.
+        run (:obj:`neptune.run.Run`, :obj:`neptune.handler.Handler`): Neptune run or namespace handler object.
             A run in Neptune is a representation of all metadata that you log to Neptune.
             Learn more in `run docs`_.
         base_namespace(:obj:`str`, optional): Defaults to "training".
