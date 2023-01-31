@@ -35,6 +35,7 @@ try:
         expect_not_an_experiment,
         verify_type,
     )
+    from neptune.new.utils import stringify_unsupported
 except ImportError:
     # neptune-client>=1.0.0 package structure
     import neptune
@@ -42,6 +43,7 @@ except ImportError:
         expect_not_an_experiment,
         verify_type,
     )
+    from neptune.utils import stringify_unsupported
 
 from neptune_xgboost.impl.version import __version__
 
@@ -200,7 +202,11 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                 )
                 warnings.warn(message)
 
-        run.get_root_object()[INTEGRATION_VERSION_KEY] = __version__
+        root_obj = self.run
+        if isinstance(self.run, neptune.handler.Handler):
+            root_obj = self.run.get_root_object()
+
+        root_obj[INTEGRATION_VERSION_KEY] = __version__
 
     def before_training(self, model):
         if hasattr(model, "cvfolds"):
@@ -211,9 +217,9 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         # model structure is different for "cv" and "train" functions that you use to train xgb model
         if self.cv:
             for i, fold in enumerate(model.cvfolds):
-                self.run[f"fold_{i}/booster_config"] = json.loads(fold.bst.save_config())
+                self.run[f"fold_{i}/booster_config"] = stringify_unsupported(json.loads(fold.bst.save_config()))
         else:
-            self.run["booster_config"] = json.loads(model.save_config())
+            self.run["booster_config"] = stringify_unsupported(json.loads(model.save_config()))
             if "best_score" in model.attributes().keys():
                 self.run["early_stopping/best_score"] = model.attributes()["best_score"]
             if "best_iteration" in model.attributes().keys():
