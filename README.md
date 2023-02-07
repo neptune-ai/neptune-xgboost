@@ -44,9 +44,9 @@ import xgboost as xgb
 from neptune.new.integrations.xgboost import NeptuneCallback
 
 # Start a run
-run = neptune.init(
+run = neptune.init_run(
     project="common/xgboost-integration",
-    api_token="ANONYMOUS",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
 )
 
 # Create a NeptuneCallback instance

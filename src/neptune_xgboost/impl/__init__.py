@@ -35,6 +35,7 @@ try:
         expect_not_an_experiment,
         verify_type,
     )
+    from neptune.new.utils import stringify_unsupported
 except ImportError:
     # neptune-client>=1.0.0 package structure
     import neptune
@@ -42,6 +43,7 @@ except ImportError:
         expect_not_an_experiment,
         verify_type,
     )
+    from neptune.utils import stringify_unsupported
 
 from neptune_xgboost.impl.version import __version__
 
@@ -76,11 +78,11 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         This callback works with ``xgboost>=1.3.0``. This release introduced new style Python callback API.
 
     Note:
-        You can use public ``api_token="ANONYMOUS"`` and set ``project="common/xgboost-integration"``
+        You can use public ``api_token=neptune.ANONYMOUS_API_TOKEN`` and set ``project="common/xgboost-integration"``
         for testing without registration.
 
     Args:
-        run (:obj:`neptune.new.run.Run`): Neptune run object.
+        run (:obj:`neptune.run.Run`, :obj:`neptune.handler.Handler`): Neptune run or namespace handler object.
             A run in Neptune is a representation of all metadata that you log to Neptune.
             Learn more in `run docs`_.
         base_namespace(:obj:`str`, optional): Defaults to "training".
@@ -107,9 +109,9 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
             from sklearn.model_selection import train_test_split
 
             # Create run
-            run = neptune.init(
+            run = neptune.init_run(
                 project="common/xgboost-integration",
-                api_token="ANONYMOUS",
+                api_token=neptune.ANONYMOUS_API_TOKEN,
                 name="xgb-train",
                 tags=["xgb-integration", "train"]
             )
@@ -173,7 +175,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
     ):
 
         expect_not_an_experiment(run)
-        verify_type("run", run, neptune.Run)
+        verify_type("run", run, (neptune.Run, neptune.handler.Handler))
         verify_type("base_namespace", base_namespace, str)
         log_model is not None and verify_type("log_model", log_model, bool)
         log_importance is not None and verify_type("log_importance", log_importance, bool)
@@ -200,7 +202,11 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                 )
                 warnings.warn(message)
 
-        run[INTEGRATION_VERSION_KEY] = __version__
+        root_obj = self.run
+        if isinstance(self.run, neptune.handler.Handler):
+            root_obj = self.run.get_root_object()
+
+        root_obj[INTEGRATION_VERSION_KEY] = __version__
 
     def before_training(self, model):
         if hasattr(model, "cvfolds"):
@@ -211,9 +217,9 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         # model structure is different for "cv" and "train" functions that you use to train xgb model
         if self.cv:
             for i, fold in enumerate(model.cvfolds):
-                self.run[f"fold_{i}/booster_config"] = json.loads(fold.bst.save_config())
+                self.run[f"fold_{i}/booster_config"] = stringify_unsupported(json.loads(fold.bst.save_config()))
         else:
-            self.run["booster_config"] = json.loads(model.save_config())
+            self.run["booster_config"] = stringify_unsupported(json.loads(model.save_config()))
             if "best_score" in model.attributes().keys():
                 self.run["early_stopping/best_score"] = model.attributes()["best_score"]
             if "best_iteration" in model.attributes().keys():
@@ -282,7 +288,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         return False
 
     def after_iteration(self, model, epoch: int, evals_log) -> bool:
-        self.run["epoch"].log(epoch)
+        self.run["epoch"].append(epoch)
         self._log_metrics(evals_log)
         self._log_learning_rate(model)
         return False
@@ -292,10 +298,10 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
             for metric_name, metric_values in evals_log[stage].items():
                 if self.cv:
                     mean, std = metric_values[-1]
-                    self.run[stage][metric_name]["mean"].log(mean)
-                    self.run[stage][metric_name]["std"].log(std)
+                    self.run[stage][metric_name]["mean"].append(mean)
+                    self.run[stage][metric_name]["std"].append(std)
                 else:
-                    self.run[stage][metric_name].log(metric_values[-1])
+                    self.run[stage][metric_name].append(metric_values[-1])
 
     def _log_learning_rate(self, model):
         if self.cv:
@@ -321,4 +327,4 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                 break
 
         if lr is not None:
-            self.run["learning_rate"].log(float(lr))
+            self.run["learning_rate"].append(float(lr))
