@@ -9,13 +9,13 @@ style = "semver"
 pattern = "default-unprefixed"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 
 # Python lack of functionalities from future versions
 importlib-metadata = { version = "*", python = "<3.8" }
 
 # Base requirements
-neptune-client = ">=0.16.17"
+neptune= ">=1.0.0"
 xgboost = ">=1.3.0"
 matplotlib = "*"
 graphviz = "*"
@@ -42,7 +42,7 @@ include = ["CHANGELOG.md"]
 license = "Apache License 2.0"
 name = "neptune-xgboost"
 readme = "README.md"
-version = "0.0.0"
+version = "1.0.0"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -75,7 +75,7 @@ packages = [
 
 [tool.black]
 line-length = 120
-target-version = ['py36', 'py37', 'py38', 'py39', 'py310']
+target-version = ['py37', 'py38', 'py39', 'py310']
 include = '\.pyi?$'
 exclude = '''
 /(
