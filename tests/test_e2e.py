@@ -3,11 +3,11 @@ import xgboost as xgb
 from neptune.new.integrations.xgboost import NeptuneCallback
 
 try:
-    # neptune-client=0.9.0+ package structure
-    from neptune.new import init_run
-except ImportError:
     # neptune-client>=1.0.0 package structure
     from neptune import init_run
+except ImportError:
+    # neptune-client=0.9.0+ package structure
+    from neptune.new import init_run
 
 
 @pytest.mark.parametrize("log_tree", [None, [0, 1, 2, 3]])
