@@ -40,7 +40,6 @@ try:
     from neptune.utils import stringify_unsupported
 
 except ImportError:
-    # neptune-client=0.9.0+ package structure
     import neptune.new as neptune
     from neptune.new.metadata_containers import Run
     from neptune.new.handler import Handler
