@@ -1,3 +1,7 @@
+## neptune-xgboost 1.1.0
+- Removed `neptune` and `neptune-client` from base requirements ([#23](https://github.com/neptune-ai/neptune-xgboost/pull/23))
+
+
 ## neptune-xgboost 1.0.0
 
 ### Changes
