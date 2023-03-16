@@ -29,21 +29,25 @@ import xgboost as xgb
 from matplotlib import image
 
 try:
-    # neptune-client=0.9.0+ package structure
-    import neptune.new as neptune
-    from neptune.new.integrations.utils import (
-        expect_not_an_experiment,
-        verify_type,
-    )
-    from neptune.new.utils import stringify_unsupported
-except ImportError:
     # neptune-client>=1.0.0 package structure
     import neptune
+    from neptune import Run
+    from neptune.handler import Handler
     from neptune.integrations.utils import (
         expect_not_an_experiment,
         verify_type,
     )
     from neptune.utils import stringify_unsupported
+
+except ImportError:
+    import neptune.new as neptune
+    from neptune.new.metadata_containers import Run
+    from neptune.new.handler import Handler
+    from neptune.new.integrations.utils import (
+        expect_not_an_experiment,
+        verify_type,
+    )
+    from neptune.new.utils import stringify_unsupported
 
 from neptune_xgboost.impl.version import __version__
 
@@ -102,7 +106,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
     ):
 
         expect_not_an_experiment(run)
-        verify_type("run", run, (neptune.Run, neptune.handler.Handler))
+        verify_type("run", run, (Run, Handler))
         verify_type("base_namespace", base_namespace, str)
         log_model is not None and verify_type("log_model", log_model, bool)
         log_importance is not None and verify_type("log_importance", log_importance, bool)
@@ -130,7 +134,7 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                 warnings.warn(message)
 
         root_obj = self.run
-        if isinstance(self.run, neptune.handler.Handler):
+        if isinstance(self.run, Handler):
             root_obj = self.run.get_root_object()
 
         root_obj[INTEGRATION_VERSION_KEY] = __version__
