@@ -57,114 +57,41 @@ INTEGRATION_VERSION_KEY = "source_code/integrations/neptune-xgboost"
 class NeptuneCallback(xgb.callback.TrainingCallback):
     """Neptune callback for logging metadata during XGBoost model training.
 
-    See guide with examples in the `Neptune-XGBoost docs`_.
+    This callback logs metrics, all parameters, learning rate, pickled model, and visualizations.
+    If early stopping is activated, "best_score" and "best_iteration" are also logged.
 
-    This callback logs metrics, all parameters, learning rate, pickled model, visualizations.
-    If early stopping is activated "best_score" and "best_iteration" is also logged.
+    Metrics are logged for every dataset in the `evals` list and for every metric specified.
 
-    All metadata are collected under the common namespace that you can specify.
-    See: ``base_namespace`` argument (defaults to "training").
+    The callback works with the `xgboost.train()` and `xgboost.cv()` functions,
+    and with `model.fit()` from the the scikit-learn API.
 
-    Metrics are logged for every dataset in the ``evals`` list and for every metric specified.
-    For example with ``evals = [(dtrain, "train"), (dval, "valid")]`` and ``"eval_metric": ["mae", "rmse"]``,
-    4 metrics are created::
-
-        "train/mae"
-        "train/rmse"
-        "valid/mae"
-        "valid/rmse"
-
-    Visualizations are feature importances and trees.
-
-    Callback works with ``xgboost.train()`` and ``xgboost.cv()`` functions, and with the sklearn API ``model.fit()``.
-
-    Note:
-        This callback works with ``xgboost>=1.3.0``. This release introduced new style Python callback API.
-
-    Note:
-        You can use public ``api_token=neptune.ANONYMOUS_API_TOKEN`` and set ``project="common/xgboost-integration"``
-        for testing without registration.
+    Note: This callback requires `xgboost>=1.3.0`.
 
     Args:
-        run (:obj:`neptune.run.Run`, :obj:`neptune.handler.Handler`): Neptune run or namespace handler object.
-            A run in Neptune is a representation of all metadata that you log to Neptune.
-            Learn more in `run docs`_.
-        base_namespace(:obj:`str`, optional): Defaults to "training".
-            Root namespace. All metadata will be logged inside.
-        log_model (bool): Defaults to True. Log model as pickled file at the end of training.
-        log_importance (bool): Defaults to True. Log feature importance charts at the end of training.
-        max_num_features (int): Defaults to None. Max number of top features on the importance charts.
-            Works only if ``log_importance`` is set to ``True``. If None, all features will be displayed.
-            See `xgboost.plot_importance`_ for details.
-        log_tree (list): Defaults to None. Indices of the target trees to log as charts.
-            This requires graphviz to work. Learn about setup in the `Neptune-XGBoost installation`_ docs.
-            See `xgboost.to_graphviz`_ for details.
-        tree_figsize (int): Defaults to 30, Control size of the visualized tree image.
-            Increase this in case you work with large trees. Works only if ``log_tree`` is list.
+        run: Neptune run object. You can also pass a namespace handler object;
+            for example, run["test"], in which case all metadata is logged under
+            the "test" namespace inside the run.
+        base_namespace: Root namespace where all metadata logged by the callback is stored.
+        log_model: Whether to log model as pickled file at the end of training.
+        log_importance: Whether to log feature importance charts at the end of training.
+        max_num_features: Max number of top features on the importance charts.
+            Works only if log_importance is set to True. If None, all features are displayed.
+        log_tree: Indexes of the target trees to log as charts.
+            Requires graphviz to be installed.
+        tree_figsize: Size of the visualized tree image.
+            Increase this in case you work with large trees. Works only if log_tree is not None.
 
-    Examples:
-        For more examples visit `example scripts`_.
-        Full script that does model training and logging of the metadata::
+    Example:
+        import neptune
+        from neptune.integrations.xgboost import NeptuneCallback
 
-            import neptune
-            import xgboost as xgb
-            from neptune.new.integrations.xgboost import NeptuneCallback
-            from sklearn.datasets import load_boston
-            from sklearn.model_selection import train_test_split
+        run = neptune.init_run()
+        neptune_callback = NeptuneCallback(run=run)
+        xgb.train( ..., callbacks=[neptune_callback])
 
-            # Create run
-            run = neptune.init_run(
-                project="common/xgboost-integration",
-                api_token=neptune.ANONYMOUS_API_TOKEN,
-                name="xgb-train",
-                tags=["xgb-integration", "train"]
-            )
-
-            # Create neptune callback
-            neptune_callback = NeptuneCallback(run=run, log_tree=[0, 1, 2, 3])
-
-            # Prepare data
-            X, y = load_boston(return_X_y=True)
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=123)
-            dtrain = xgb.DMatrix(X_train, label=y_train)
-            dval = xgb.DMatrix(X_test, label=y_test)
-
-            # Define parameters
-            model_params = {
-                "eta": 0.7,
-                "gamma": 0.001,
-                "max_depth": 9,
-                "objective": "reg:squarederror",
-                "eval_metric": ["mae", "rmse"]
-            }
-            evals = [(dtrain, "train"), (dval, "valid")]
-            num_round = 57
-
-            # Train the model and log metadata to the run in Neptune
-            xgb.train(
-                params=model_params,
-                dtrain=dtrain,
-                num_boost_round=num_round,
-                evals=evals,
-                callbacks=[
-                    neptune_callback,
-                    xgb.callback.LearningRateScheduler(lambda epoch: 0.99**epoch),
-                    xgb.callback.EarlyStopping(rounds=30)
-                ],
-            )
-
-    .. _Neptune-XGBoost docs:
-        https://docs.neptune.ai/integrations-and-supported-tools/model-training/xgboost
-       _Neptune-XGBoost installation:
-        https://docs.neptune.ai/integrations-and-supported-tools/model-training/xgboost#install-requirements
-       _run docs:
-        https://docs.neptune.ai/api-reference/run
-       _xgboost.plot_importance:
-        https://xgboost.readthedocs.io/en/latest/python/python_api.html#xgboost.plot_importance
-       _xgboost.to_graphviz:
-        https://xgboost.readthedocs.io/en/latest/python/python_api.html#xgboost.to_graphviz
-       _example scripts:
-        https://github.com/neptune-ai/examples/tree/main/integrations-and-supported-tools/xgboost/scripts
+    For more, see the docs:
+        Tutorial: https://docs.neptune.ai/integrations/xgboost/
+        API reference: https://docs.neptune.ai/api/integrations/xgboost/
     """
 
     def __init__(
