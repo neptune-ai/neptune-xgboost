@@ -26,10 +26,7 @@ from io import BytesIO
 
 import matplotlib.pyplot as plt
 import xgboost as xgb
-from matplotlib import (
-    image,
-    use,
-)
+from matplotlib import image
 
 try:
     # neptune-client>=1.0.0 package structure
@@ -107,7 +104,6 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         log_tree=None,
         tree_figsize=30,
     ):
-        use("Agg")
         expect_not_an_experiment(run)
         verify_type("run", run, (Run, Handler))
         verify_type("base_namespace", base_namespace, str)
