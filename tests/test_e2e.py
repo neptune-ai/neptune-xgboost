@@ -1,5 +1,6 @@
 import pytest
 import xgboost as xgb
+from matplotlib import use
 from neptune.new.integrations.xgboost import NeptuneCallback
 
 try:
@@ -12,6 +13,8 @@ except ImportError:
 
 @pytest.mark.parametrize("log_tree", [None, [0, 1, 2, 3]])
 def test_e2e(dataset, log_tree):
+    use("Agg")
+
     # Start a run
     run = init_run()
 
