@@ -1,6 +1,6 @@
 import pytest
 import xgboost as xgb
-from neptune.new.integrations.xgboost import NeptuneCallback
+from neptune.integrations.xgboost import NeptuneCallback
 
 try:
     # neptune-client>=1.0.0 package structure
@@ -35,7 +35,7 @@ def test_e2e(dataset, log_tree):
         dtrain=data_train,
         callbacks=[neptune_callback],
     )
-    run.wait()
+    run.sync()
     validate_results(run, log_tree, base_namespace="training")
 
 
@@ -64,7 +64,7 @@ def test_e2e_using_namespace(dataset, log_tree):
         dtrain=data_train,
         callbacks=[neptune_callback],
     )
-    run.wait()
+    run.sync()
     validate_results(run, log_tree, base_namespace="my_namespace")
 
 
