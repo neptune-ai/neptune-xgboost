@@ -104,7 +104,6 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         log_tree=None,
         tree_figsize=30,
     ):
-
         expect_not_an_experiment(run)
         verify_type("run", run, (Run, Handler))
         verify_type("base_namespace", base_namespace, str)
@@ -129,7 +128,9 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
                 self.log_tree = None
                 message = (
                     "Graphviz executables not found, so trees will not be logged. "
-                    "Make sure the Graphviz executables are on your systems' PATH"
+                    "Make sure the Graphviz executables are on your systems' PATH. "
+                    "Note that you need to have both the Graphviz software and the Python interface installed. "
+                    "For installation details, see the integration docs: https://docs.neptune.ai/integrations/xgboost/"
                 )
                 warnings.warn(message)
 
