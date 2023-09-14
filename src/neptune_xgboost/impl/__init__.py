@@ -104,7 +104,6 @@ class NeptuneCallback(xgb.callback.TrainingCallback):
         log_tree=None,
         tree_figsize=30,
     ):
-
         expect_not_an_experiment(run)
         verify_type("run", run, (Run, Handler))
         verify_type("base_namespace", base_namespace, str)
